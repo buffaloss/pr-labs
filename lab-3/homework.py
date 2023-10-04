@@ -24,7 +24,7 @@ def get_product(url):
     return product
 
 def main():
-    product = get_product("https://999.md/ro/84220635")
+    product = get_product("https://999.md/ro/83761675")
     for key, value in product.items():
         print(key, ":", value)
 
