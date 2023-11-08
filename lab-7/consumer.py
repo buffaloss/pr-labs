@@ -1,7 +1,7 @@
 import pika
 from homework import extract_info_from_page
 from threading import Thread, Lock
-import json
+from tinydb import TinyDB
 
 # This list will hold the data scraped by the worker threads
 scraped_data = []
@@ -11,6 +11,9 @@ data_lock = Lock()
 
 # We manually set the number of worker threads we want to use
 thread_count = 3
+
+# Initialize TinyDB
+db = TinyDB('data.json')
 
 
 # This is the function that each worker thread will run
@@ -34,6 +37,7 @@ def worker(thread_id):
         # We use the lock to ensure that no other thread is writing to the list at the same time
         with data_lock:
             scraped_data.append(product_info)
+            db.insert(product_info)
 
         print(f"Worker {thread_id+1} finished processing URL {body}.")
         # We send an acknowledgement back to the RabbitMQ server
@@ -70,13 +74,9 @@ def main():
     for t in workers:
         t.join()
 
-    # We write the scraped data to a JSON file
-    with open('data.json', 'w') as f:
-        json.dump(scraped_data, f, indent=4)
-
     print("All tasks have been completed.")
 
 
-# This is the entry point of the script
+# Entry point of the script
 if __name__ == "__main__":
     main()
